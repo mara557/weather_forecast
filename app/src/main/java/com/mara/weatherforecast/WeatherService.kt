@@ -1,116 +1,78 @@
+package com.mara.weatherforecast
+
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Response
 import java.io.IOException
 import com.google.gson.Gson
-import com.mara.weatherforecast.ForecastResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 class WeatherService(private val apiKey: String) {
     private val client = OkHttpClient()
     private val gson = Gson()
 
-    fun fetchWeatherData(city: String, onResponse: (String, String) -> Unit, onFailure: (IOException) -> Unit) {
+    suspend fun fetchWeatherData(city: String): Pair<String, String> {
         val url = "https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric"
         val request = Request.Builder().url(url).build()
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                onFailure(e)
-            }
+        return withContext(Dispatchers.IO) {
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
-            override fun onResponse(call: Call, response: Response) {
-                if (!response.isSuccessful) {
-                    onFailure(IOException("Unexpected code $response"))
-                    return
-                }
-
-                response.body?.string()?.let {
-                    val jsonResponse = JSONObject(it)
-                    val weatherDescription = jsonResponse.getJSONArray("weather").getJSONObject(0).getString("description")
-                    val temp = jsonResponse.getJSONObject("main").getString("temp")
-                    onResponse(weatherDescription, temp)
-                }
-            }
-        })
+            response.body?.string()?.let {
+                val jsonResponse = JSONObject(it)
+                val weatherDescription = jsonResponse.getJSONArray("weather").getJSONObject(0).getString("description")
+                val temp = jsonResponse.getJSONObject("main").getString("temp")
+                Pair(weatherDescription, temp)
+            } ?: throw IOException("Response body is null")
+        }
     }
 
-    fun fetchWeatherData(latitude: Double, longitude: Double, onResponse: (String, String) -> Unit, onFailure: (IOException) -> Unit) {
+    suspend fun fetchWeatherData(latitude: Double, longitude: Double): Pair<String, String> {
         val url = "https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric"
         val request = Request.Builder().url(url).build()
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                onFailure(e)
-            }
+        return withContext(Dispatchers.IO) {
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
-            override fun onResponse(call: Call, response: Response) {
-                if (!response.isSuccessful) {
-                    onFailure(IOException("Unexpected code $response"))
-                    return
-                }
-
-                response.body?.string()?.let {
-                    val jsonResponse = JSONObject(it)
-                    val weatherDescription = jsonResponse.getJSONArray("weather").getJSONObject(0).getString("description")
-                    val temp = jsonResponse.getJSONObject("main").getString("temp")
-                    onResponse(weatherDescription, temp)
-                }
-            }
-        })
+            response.body?.string()?.let {
+                val jsonResponse = JSONObject(it)
+                val weatherDescription = jsonResponse.getJSONArray("weather").getJSONObject(0).getString("description")
+                val temp = jsonResponse.getJSONObject("main").getString("temp")
+                Pair(weatherDescription, temp)
+            } ?: throw IOException("Response body is null")
+        }
     }
 
-    fun fetchFiveDayForecast(city: String, onResponse: (ForecastResponse) -> Unit, onFailure: (IOException) -> Unit) {
+    suspend fun fetchFiveDayForecast(city: String): ForecastResponse {
         val url = "https://api.openweathermap.org/data/2.5/forecast?q=$city&appid=$apiKey&units=metric"
         val request = Request.Builder().url(url).build()
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                onFailure(e)
-            }
+        return withContext(Dispatchers.IO) {
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
-            override fun onResponse(call: Call, response: Response) {
-                if (!response.isSuccessful) {
-                    onFailure(IOException("Unexpected code $response"))
-                    return
-                }
-
-                val responseBody = response.body?.string()
-                if (responseBody != null) {
-                    val forecastResponse = gson.fromJson(responseBody, ForecastResponse::class.java)
-                    onResponse(forecastResponse)
-                } else {
-                    onFailure(IOException("Response body is null"))
-                }
-            }
-        })
+            val responseBody = response.body?.string()
+            responseBody?.let {
+                gson.fromJson(it, ForecastResponse::class.java)
+            } ?: throw IOException("Response body is null")
+        }
     }
 
-    fun fetchFiveDayForecast(latitude: Double, longitude: Double, onResponse: (ForecastResponse) -> Unit, onFailure: (IOException) -> Unit) {
+    suspend fun fetchFiveDayForecast(latitude: Double, longitude: Double): ForecastResponse {
         val url = "https://api.openweathermap.org/data/2.5/forecast?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric"
         val request = Request.Builder().url(url).build()
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                onFailure(e)
-            }
+        return withContext(Dispatchers.IO) {
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
-            override fun onResponse(call: Call, response: Response) {
-                if (!response.isSuccessful) {
-                    onFailure(IOException("Unexpected code $response"))
-                    return
-                }
-
-                val responseBody = response.body?.string()
-                if (responseBody != null) {
-                    val forecastResponse = gson.fromJson(responseBody, ForecastResponse::class.java)
-                    onResponse(forecastResponse)
-                } else {
-                    onFailure(IOException("Response body is null"))
-                }
-            }
-        })
+            val responseBody = response.body?.string()
+            responseBody?.let {
+                gson.fromJson(it, ForecastResponse::class.java)
+            } ?: throw IOException("Response body is null")
+        }
     }
 }
