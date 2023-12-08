@@ -55,7 +55,8 @@ sealed class Result<out T> {
 }
 
 
-class WeatherViewModelFactory(private val weatherService: WeatherService): ViewModelProvider.Factory {
+class WeatherViewModelFactory(private val weatherService: WeatherService) :
+    ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(WeatherViewModel::class.java)) {
             return WeatherViewModel(weatherService) as T

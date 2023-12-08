@@ -12,7 +12,6 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -108,9 +107,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     private fun setupViewModel() {
-        val service = WeatherService("43b4184a92fc42b7fa9ea7e01101a481") // Replace with actual API key
+        val service =
+            WeatherService("43b4184a92fc42b7fa9ea7e01101a481") // Replace with actual API key
         val factory = WeatherViewModelFactory(service)
         viewModel = ViewModelProvider(this, factory)[WeatherViewModel::class.java]
     }
@@ -180,11 +179,19 @@ class MainActivity : AppCompatActivity() {
         textTemp.text = "${weatherData.second}°C"
     }
 
-    private fun updateForecastView(dayText: TextView, iconImage: ImageView, tempText: TextView, date: String, iconCode: String, temperature: String) {
+    private fun updateForecastView(
+        dayText: TextView,
+        iconImage: ImageView,
+        tempText: TextView,
+        date: String,
+        iconCode: String,
+        temperature: String
+    ) {
         dayText.text = date
         iconImage.setImageResource(weatherIconsMap[iconCode] ?: R.drawable.ic_default)
         tempText.text = temperature
     }
+
     private fun updateForecastViews(forecastResponse: ForecastResponse) {
         // Update your UI with the forecast data
         forecastResponse.list.chunked(8).take(5).forEachIndexed { index, forecasts ->
@@ -196,25 +203,76 @@ class MainActivity : AppCompatActivity() {
             val temperature = "${forecast.main.temp}°C"
 
             when (index) {
-                0 -> updateForecastView(dayOneText, weatherIconOneImage, tempOneText, formattedDate, iconCode, temperature)
-                1 -> updateForecastView(dayTwoText, weatherIconTwoImage, tempTwoText, formattedDate, iconCode, temperature)
-                2 -> updateForecastView(dayThreeText, weatherIconThreeImage, tempThreeText, formattedDate, iconCode, temperature)
-                3 -> updateForecastView(dayFourText, weatherIconFourImage, tempFourText, formattedDate, iconCode, temperature)
-                4 -> updateForecastView(dayFiveText, weatherIconFiveImage, tempFiveText, formattedDate, iconCode, temperature)
+                0 -> updateForecastView(
+                    dayOneText,
+                    weatherIconOneImage,
+                    tempOneText,
+                    formattedDate,
+                    iconCode,
+                    temperature
+                )
+
+                1 -> updateForecastView(
+                    dayTwoText,
+                    weatherIconTwoImage,
+                    tempTwoText,
+                    formattedDate,
+                    iconCode,
+                    temperature
+                )
+
+                2 -> updateForecastView(
+                    dayThreeText,
+                    weatherIconThreeImage,
+                    tempThreeText,
+                    formattedDate,
+                    iconCode,
+                    temperature
+                )
+
+                3 -> updateForecastView(
+                    dayFourText,
+                    weatherIconFourImage,
+                    tempFourText,
+                    formattedDate,
+                    iconCode,
+                    temperature
+                )
+
+                4 -> updateForecastView(
+                    dayFiveText,
+                    weatherIconFiveImage,
+                    tempFiveText,
+                    formattedDate,
+                    iconCode,
+                    temperature
+                )
             }
         }
     }
 
     private fun checkLocationPermissionAndFetchLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
         } else {
             getLastKnownLocation()
         }
     }
 
     private fun getLastKnownLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
                     fetchWeatherData(location.latitude, location.longitude)
@@ -231,11 +289,16 @@ class MainActivity : AppCompatActivity() {
         showToast("Failed to fetch weather data: ${e.message}")
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             getLastKnownLocation()
         } else {
             showToast("Location permission denied")
         }
-    }}
+    }
+}

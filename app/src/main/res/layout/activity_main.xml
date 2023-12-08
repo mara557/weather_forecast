@@ -16,13 +16,13 @@
         android:ems="10"
         android:fontFamily="@font/noto_serif"
         android:hint="Location"
+        android:imeOptions="actionSearch"
         android:inputType="text"
         android:text="@null"
         android:textColor="@color/black"
         android:textColorHint="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:imeOptions="actionSearch"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
