@@ -1,6 +1,6 @@
 # Weather Forecast App
 
-![Screenshot](https://github.com/mara557/weather_forecast/images/Screenshot_20231208_002433.png)
+![Screenshot](images/Screenshot_20231208_002433.png)
 
 This Android app provides current weather information and a 5-day weather forecast for a given location. It uses the OpenWeatherMap API to fetch weather data.
 
