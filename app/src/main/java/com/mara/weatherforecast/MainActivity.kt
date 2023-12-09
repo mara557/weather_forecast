@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     private val weatherIconsMap = mapOf(
         "01d" to R.drawable.ic_01d,
-        "01n" to R.drawable.ic_01d,
+        "01n" to R.drawable.ic_01n,
         "02d" to R.drawable.ic_02d,
         "02n" to R.drawable.ic_02n,
         "03d" to R.drawable.ic_03d,
@@ -58,8 +58,8 @@ class MainActivity : AppCompatActivity() {
         "11n" to R.drawable.ic_11n,
         "13d" to R.drawable.ic_13d,
         "13n" to R.drawable.ic_13n,
-        "50d" to R.drawable.ic_50n,
-        "50n" to R.drawable.ic_50n,
+        "50d" to R.drawable.ic_50d,
+        "50n" to R.drawable.ic_50n
     )
 
     private lateinit var viewModel: WeatherViewModel
@@ -75,7 +75,6 @@ class MainActivity : AppCompatActivity() {
         initializeViews()
         setupViewModel()
         setupListeners()
-        checkLocationPermissionAndFetchLocation()
     }
 
     private fun initializeViews() {
@@ -86,7 +85,6 @@ class MainActivity : AppCompatActivity() {
         locationButton = findViewById(R.id.button)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // Initialize TextViews for the day names and temperatures
         dayOneText = findViewById(R.id.dayOne)
         tempOneText = findViewById(R.id.tempOne)
         dayTwoText = findViewById(R.id.dayTwo)
@@ -98,7 +96,6 @@ class MainActivity : AppCompatActivity() {
         dayFiveText = findViewById(R.id.dayFive)
         tempFiveText = findViewById(R.id.tempFive)
 
-        // Initialize ImageViews for the weather icons
         weatherIconOneImage = findViewById(R.id.weatherIconOne)
         weatherIconTwoImage = findViewById(R.id.weatherIconTwo)
         weatherIconThreeImage = findViewById(R.id.weatherIconThree)
@@ -106,77 +103,74 @@ class MainActivity : AppCompatActivity() {
         weatherIconFiveImage = findViewById(R.id.weatherIconFive)
     }
 
-
     private fun setupViewModel() {
-        val service =
-            WeatherService("43b4184a92fc42b7fa9ea7e01101a481") // Replace with actual API key
+        val service = WeatherService("43b4184a92fc42b7fa9ea7e01101a481") // Replace with your actual API key
         val factory = WeatherViewModelFactory(service)
         viewModel = ViewModelProvider(this, factory)[WeatherViewModel::class.java]
+
+        observeViewModel()
     }
 
+    private fun observeViewModel() {
+        viewModel.weatherData.observe(this) { result ->
+            when (result) {
+                is Result.Success -> updateWeatherUI(result.data as Pair<String, String>)
+                is Result.Failure -> showToast("Failed to fetch weather data: ${result.exception.message}")
+                is Result.Loading -> {
+                    // Handle loading state, e.g., show a loading spinner
+                }
+            }
+        }
+
+        viewModel.forecastData.observe(this) { result ->
+            when (result) {
+                is Result.Success -> updateForecastViews(result.data as ForecastResponse)
+                is Result.Failure -> showToast("Failed to fetch forecast data: ${result.exception.message}")
+                is Result.Loading -> {
+                    // Handle loading state
+                }
+            }
+        }
+    }
 
     private fun setupListeners() {
         locationSearch.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH || (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
-                fetchWeatherData(locationSearch.text.toString())
+                val city = locationSearch.text.toString()
+                viewModel.fetchWeatherData(city)
+                viewModel.fetchFiveDayForecast(city)
                 true
             } else false
         }
 
-
         locationButton.setOnClickListener { checkLocationPermissionAndFetchLocation() }
     }
 
-    private fun fetchWeatherData(city: String) {
-        viewModel.fetchWeatherData(city).observe(this) { result ->
-            when (result) {
-                is Result.Success -> handleWeatherResponse(result.data)
-                is Result.Failure -> handleWeatherFailure(result.exception)
-                is Result.Loading -> {
-                    // Handle loading state
-                }
-            }
-        }
-
-        viewModel.fetchFiveDayForecast(city).observe(this) { result ->
-            when (result) {
-                is Result.Success -> updateForecastViews(result.data)
-                is Result.Failure -> handleWeatherFailure(result.exception)
-                is Result.Loading -> {
-                    // Handle loading state
-                }
-            }
-        }
-    }
-
-    private fun fetchWeatherData(latitude: Double, longitude: Double) {
-        viewModel.fetchWeatherData(latitude, longitude).observe(this) { result ->
-            when (result) {
-                is Result.Success -> handleWeatherResponse(result.data)
-                is Result.Failure -> handleWeatherFailure(result.exception)
-                is Result.Loading -> {
-                    // Handle loading state, e.g., show a loading spinner
-                }
-            }
-        }
-
-        viewModel.fetchFiveDayForecast(latitude, longitude).observe(this) { result ->
-            when (result) {
-                is Result.Success -> updateForecastViews(result.data)
-                is Result.Failure -> handleWeatherFailure(result.exception)
-                is Result.Loading -> {
-                    // Handle loading state, e.g., show a loading spinner
-                }
-            }
-        }
-    }
-
-
     @SuppressLint("SetTextI18n")
-    private fun handleWeatherResponse(weatherData: Pair<String, String>) {
-        // Assuming weatherData.first is the weather description and weatherData.second is the temperature
+    private fun updateWeatherUI(weatherData: Pair<String, String>) {
         currentCondition.text = weatherData.first
         textTemp.text = "${weatherData.second}°C"
+    }
+
+    private fun updateForecastViews(forecastResponse: ForecastResponse) {
+        val dateFormat = SimpleDateFormat("EEE", Locale.getDefault())
+        val forecastList = forecastResponse.list.chunked(8).take(5)
+
+        forecastList.forEachIndexed { index, forecasts ->
+            val forecast = forecasts.maxByOrNull { it.dt } ?: return@forEachIndexed
+            val date = Date(forecast.dt * 1000)
+            val formattedDate = dateFormat.format(date)
+            val iconCode = forecast.weather.first().icon
+            val temperature = "${forecast.main.temp}°C"
+
+            when (index) {
+                0 -> updateForecastView(dayOneText, weatherIconOneImage, tempOneText, formattedDate, iconCode, temperature)
+                1 -> updateForecastView(dayTwoText, weatherIconTwoImage, tempTwoText, formattedDate, iconCode, temperature)
+                2 -> updateForecastView(dayThreeText, weatherIconThreeImage, tempThreeText, formattedDate, iconCode, temperature)
+                3 -> updateForecastView(dayFourText, weatherIconFourImage, tempFourText, formattedDate, iconCode, temperature)
+                4 -> updateForecastView(dayFiveText, weatherIconFiveImage, tempFiveText, formattedDate, iconCode, temperature)
+            }
+        }
     }
 
     private fun updateForecastView(
@@ -192,90 +186,20 @@ class MainActivity : AppCompatActivity() {
         tempText.text = temperature
     }
 
-    private fun updateForecastViews(forecastResponse: ForecastResponse) {
-        // Update your UI with the forecast data
-        forecastResponse.list.chunked(8).take(5).forEachIndexed { index, forecasts ->
-            val forecast = forecasts.maxByOrNull { it.dt } ?: return@forEachIndexed
-            val date = Date(forecast.dt * 1000)
-            val dateFormat = SimpleDateFormat("EEE", Locale.getDefault())
-            val formattedDate = dateFormat.format(date)
-            val iconCode = forecast.weather.first().icon
-            val temperature = "${forecast.main.temp}°C"
-
-            when (index) {
-                0 -> updateForecastView(
-                    dayOneText,
-                    weatherIconOneImage,
-                    tempOneText,
-                    formattedDate,
-                    iconCode,
-                    temperature
-                )
-
-                1 -> updateForecastView(
-                    dayTwoText,
-                    weatherIconTwoImage,
-                    tempTwoText,
-                    formattedDate,
-                    iconCode,
-                    temperature
-                )
-
-                2 -> updateForecastView(
-                    dayThreeText,
-                    weatherIconThreeImage,
-                    tempThreeText,
-                    formattedDate,
-                    iconCode,
-                    temperature
-                )
-
-                3 -> updateForecastView(
-                    dayFourText,
-                    weatherIconFourImage,
-                    tempFourText,
-                    formattedDate,
-                    iconCode,
-                    temperature
-                )
-
-                4 -> updateForecastView(
-                    dayFiveText,
-                    weatherIconFiveImage,
-                    tempFiveText,
-                    formattedDate,
-                    iconCode,
-                    temperature
-                )
-            }
-        }
-    }
-
     private fun checkLocationPermissionAndFetchLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
         } else {
             getLastKnownLocation()
         }
     }
 
     private fun getLastKnownLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
-                    fetchWeatherData(location.latitude, location.longitude)
+                    viewModel.fetchWeatherData(location.latitude, location.longitude)
+                    viewModel.fetchFiveDayForecast(location.latitude, location.longitude)
                 }
             }
         }
@@ -285,15 +209,7 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    private fun handleWeatherFailure(e: Exception) {
-        showToast("Failed to fetch weather data: ${e.message}")
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             getLastKnownLocation()
