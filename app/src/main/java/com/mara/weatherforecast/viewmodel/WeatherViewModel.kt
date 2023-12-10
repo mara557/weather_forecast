@@ -2,13 +2,12 @@ package com.mara.weatherforecast.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.mara.weatherforecast.model.ForecastResponse
 import com.mara.weatherforecast.model.WeatherService
+import com.mara.weatherforecast.utils.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.mara.weatherforecast.utils.Result
 
 class WeatherViewModel(private val weatherService: WeatherService) : ViewModel() {
 

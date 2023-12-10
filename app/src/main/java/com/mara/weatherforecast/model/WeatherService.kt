@@ -1,13 +1,12 @@
 package com.mara.weatherforecast.model
 
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.IOException
 import com.google.gson.Gson
-import com.mara.weatherforecast.model.ForecastResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.json.JSONObject
+import java.io.IOException
 
 class WeatherService(private val apiKey: String) {
     private val client = OkHttpClient()
