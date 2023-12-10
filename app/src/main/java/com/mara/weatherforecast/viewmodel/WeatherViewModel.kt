@@ -1,11 +1,14 @@
-package com.mara.weatherforecast
+package com.mara.weatherforecast.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.mara.weatherforecast.model.ForecastResponse
+import com.mara.weatherforecast.model.WeatherService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.mara.weatherforecast.utils.Result
 
 class WeatherViewModel(private val weatherService: WeatherService) : ViewModel() {
 
@@ -61,19 +64,3 @@ class WeatherViewModel(private val weatherService: WeatherService) : ViewModel()
     }
 }
 
-sealed class Result<out T> {
-    data class Success<out T>(val data: T) : Result<T>()
-    data class Failure(val exception: Exception) : Result<Nothing>()
-    object Loading : Result<Nothing>()
-}
-
-class WeatherViewModelFactory(private val weatherService: WeatherService) :
-    ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(WeatherViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return WeatherViewModel(weatherService) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
