@@ -22,8 +22,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
+// The main screen of the weather app where weather information is displayed.
+
 class MainActivity : AppCompatActivity() {
 
+    // UI elements declaration
     private lateinit var locationSearch: EditText
     private lateinit var textCurrent: TextView
     private lateinit var currentCondition: TextView
@@ -31,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locationButton: Button
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
+    // Declaration of UI elements for the five-day forecast
     private lateinit var dayOneText: TextView
     private lateinit var tempOneText: TextView
     private lateinit var dayTwoText: TextView
@@ -42,12 +46,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var dayFiveText: TextView
     private lateinit var tempFiveText: TextView
 
+    // Declaration of UI elements for weather icons
     private lateinit var weatherIconOneImage: ImageView
     private lateinit var weatherIconTwoImage: ImageView
     private lateinit var weatherIconThreeImage: ImageView
     private lateinit var weatherIconFourImage: ImageView
     private lateinit var weatherIconFiveImage: ImageView
 
+    // Mapping of weather icon codes to their corresponding resource IDs
     private val weatherIconsMap = mapOf(
         "01d" to R.drawable.ic_01d,
         "01n" to R.drawable.ic_01n,
@@ -69,21 +75,28 @@ class MainActivity : AppCompatActivity() {
         "50n" to R.drawable.ic_50n
     )
 
+    // ViewModel responsible for managing UI-related data
     private lateinit var viewModel: WeatherViewModel
 
+    // Constant value for location permission request code
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
 
+    // The entry point when the activity is created
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Initialization of UI elements
         initializeViews()
+        // Setting up ViewModel to manage data
         setupViewModel()
+        // Setting up listeners for UI elements
         setupListeners()
     }
 
+    // Function to initialize UI elements
     private fun initializeViews() {
         locationSearch = findViewById(R.id.locationSearch)
         textCurrent = findViewById(R.id.textCurrent)
@@ -110,15 +123,21 @@ class MainActivity : AppCompatActivity() {
         weatherIconFiveImage = findViewById(R.id.weatherIconFive)
     }
 
+    // Function to set up the ViewModel for data management
     private fun setupViewModel() {
+        // Creation of WeatherService with the API key
         val service =
             WeatherService("43b4184a92fc42b7fa9ea7e01101a481") // Replace with your actual API key
+        // Creation of ViewModelFactory with the WeatherService
         val factory = WeatherViewModelFactory(service)
+        // Creating the ViewModel instance
         viewModel = ViewModelProvider(this, factory)[WeatherViewModel::class.java]
 
+        // Observing changes in ViewModel data
         observeViewModel()
     }
 
+    // Function to observe changes in ViewModel data
     private fun observeViewModel() {
         viewModel.weatherData.observe(this) { result ->
             when (result) {
@@ -129,6 +148,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
 
         viewModel.forecastData.observe(this) { result ->
             when (result) {
@@ -141,6 +161,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Function to set up listeners for UI elements
     private fun setupListeners() {
         locationSearch.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH || (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
@@ -154,12 +175,14 @@ class MainActivity : AppCompatActivity() {
         locationButton.setOnClickListener { checkLocationPermissionAndFetchLocation() }
     }
 
+    // Function to update the UI with current weather data
     @SuppressLint("SetTextI18n")
     private fun updateWeatherUI(weatherData: Pair<String, String>) {
         currentCondition.text = weatherData.first
         textTemp.text = "${weatherData.second}°C"
     }
 
+    // Function to update the five-day forecast views with data from the forecast response
     private fun updateForecastViews(forecastResponse: ForecastResponse) {
         val dateFormat = SimpleDateFormat("EEE", Locale.getDefault())
         val forecastList = forecastResponse.list.chunked(8).take(5)
@@ -220,6 +243,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Function to update a single forecast view
     private fun updateForecastView(
         dayText: TextView,
         iconImage: ImageView,
@@ -233,6 +257,7 @@ class MainActivity : AppCompatActivity() {
         tempText.text = temperature
     }
 
+    // Function to check location permission and fetch location if granted
     private fun checkLocationPermissionAndFetchLocation() {
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -249,6 +274,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Function to fetch the last known location if location permission is granted
     private fun getLastKnownLocation() {
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -264,10 +290,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Function to show a toast message on the screen
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
+    // Handling the result of the location permission request
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,

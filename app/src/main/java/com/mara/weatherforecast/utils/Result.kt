@@ -20,5 +20,5 @@ sealed class Result<out T> {
     /**
      * Represents the ongoing operation.
      */
-    object Loading : Result<Nothing>()
+    data object Loading : Result<Nothing>()
 }

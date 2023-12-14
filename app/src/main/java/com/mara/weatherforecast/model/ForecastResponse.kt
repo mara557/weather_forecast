@@ -2,7 +2,7 @@ package com.mara.weatherforecast.model
 
 // Represents the overall response from the weather forecast API.
 data class ForecastResponse(
-    val list: List<ForecastData>
+    val list: List<ForecastData> // List of forecast data for multiple time periods
 )
 
 // Represents individual forecast data.
