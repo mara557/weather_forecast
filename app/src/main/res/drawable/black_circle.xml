@@ -9,14 +9,14 @@
       android:pathData="M15,0
         a15,15 0 1,0 0,30
         a15,15 0 1,0 0,-30z"
-      android:fillColor="#eab676"/>
+      android:fillColor="#dcd2c7"/>
 
   <!-- Inner oval for thicker border -->
   <path
       android:pathData="M15,1
         a14,14 0 1,0 0,28
         a14,14 0 1,0 0,-28z"
-      android:fillColor="#eab676"/>
+      android:fillColor="#dcd2c7"/>
 
   <!-- Innermost circle for the inside -->
   <path

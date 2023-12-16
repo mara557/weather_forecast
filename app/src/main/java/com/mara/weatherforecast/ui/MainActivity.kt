@@ -3,6 +3,8 @@ package com.mara.weatherforecast.ui
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -10,6 +12,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -21,12 +24,6 @@ import com.mara.weatherforecast.viewmodel.WeatherViewModel
 import com.mara.weatherforecast.viewmodel.WeatherViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.core.content.ContextCompat
-import android.location.Geocoder
-import android.location.Address
-
-
-
 
 
 // The main screen of the weather app where weather information is displayed.
@@ -187,11 +184,16 @@ class MainActivity : AppCompatActivity() {
 
     // Function to update the town name based on user input or current location
     private fun updateTownName(city: String) {
-        Log.d("TownName", "Updating town name to: $city")
-        val townTextView: TextView = findViewById(R.id.Town)
-        townTextView.text = city
-        townTextView.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+        if (!isFinishing) {
+            Log.d("TownName", "Updating town name to: $city")
+            val townTextView: TextView = findViewById(R.id.Town)
+            townTextView.apply {
+                text = city.capitalize()
+                setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.white))
+            }
+        }
     }
+
 
 
     // Function to update the UI with current weather data
@@ -320,8 +322,6 @@ class MainActivity : AppCompatActivity() {
         // Check if addresses is not null and not empty
         return addresses?.takeIf { it.isNotEmpty() }?.firstOrNull()?.locality ?: ""
     }
-
-
 
 
     // Function to show a toast message on the screen
