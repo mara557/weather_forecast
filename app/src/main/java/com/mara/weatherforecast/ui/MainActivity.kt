@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.widget.*
@@ -20,6 +21,12 @@ import com.mara.weatherforecast.viewmodel.WeatherViewModel
 import com.mara.weatherforecast.viewmodel.WeatherViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.core.content.ContextCompat
+import android.location.Geocoder
+import android.location.Address
+
+
+
 
 
 // The main screen of the weather app where weather information is displayed.
@@ -152,7 +159,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.forecastData.observe(this) { result ->
             when (result) {
-                is Result.Success -> updateForecastViews(result.data as ForecastResponse)
+                is Result.Success -> updateForecastViews(result.data)
                 is Result.Failure -> showToast("Failed to fetch forecast data: ${result.exception.message}")
                 is Result.Loading -> {
                     // Handle loading state
@@ -166,14 +173,26 @@ class MainActivity : AppCompatActivity() {
         locationSearch.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH || (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
                 val city = locationSearch.text.toString()
+                updateTownName(city)
                 viewModel.fetchWeatherData(city)
                 viewModel.fetchFiveDayForecast(city)
                 true
             } else false
         }
 
-        locationButton.setOnClickListener { checkLocationPermissionAndFetchLocation() }
+        locationButton.setOnClickListener {
+            checkLocationPermissionAndFetchLocation()
+        }
     }
+
+    // Function to update the town name based on user input or current location
+    private fun updateTownName(city: String) {
+        Log.d("TownName", "Updating town name to: $city")
+        val townTextView: TextView = findViewById(R.id.Town)
+        townTextView.text = city
+        townTextView.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+    }
+
 
     // Function to update the UI with current weather data
     @SuppressLint("SetTextI18n")
@@ -260,8 +279,7 @@ class MainActivity : AppCompatActivity() {
     // Function to check location permission and fetch location if granted
     private fun checkLocationPermissionAndFetchLocation() {
         if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                this, Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
@@ -277,29 +295,44 @@ class MainActivity : AppCompatActivity() {
     // Function to fetch the last known location if location permission is granted
     private fun getLastKnownLocation() {
         if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                this, Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
+                    // Fetch weather data and forecast
                     viewModel.fetchWeatherData(location.latitude, location.longitude)
                     viewModel.fetchFiveDayForecast(location.latitude, location.longitude)
+
+                    // Update town name after GPS location is obtained
+                    val cityName = getCityName(location.latitude, location.longitude)
+                    updateTownName(cityName)
                 }
             }
         }
     }
+
+    // Function to get the city name from latitude and longitude using Geocoder
+    private fun getCityName(latitude: Double, longitude: Double): String {
+        val geocoder = Geocoder(this, Locale.getDefault())
+        val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
+
+        // Check if addresses is not null and not empty
+        return addresses?.takeIf { it.isNotEmpty() }?.firstOrNull()?.locality ?: ""
+    }
+
+
+
 
     // Function to show a toast message on the screen
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
+
     // Handling the result of the location permission request
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -309,3 +342,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
+
+
+

@@ -13,8 +13,7 @@ class WeatherViewModelFactory(private val weatherService: WeatherService) :
         // Check if the requested ViewModel is WeatherViewModel
         if (modelClass.isAssignableFrom(WeatherViewModel::class.java)) {
             // Create and return an instance of WeatherViewModel with the provided WeatherService
-            @Suppress("UNCHECKED_CAST")
-            return WeatherViewModel(weatherService) as T
+            @Suppress("UNCHECKED_CAST") return WeatherViewModel(weatherService) as T
         }
         // If an unknown ViewModel is requested, throw an exception
         throw IllegalArgumentException("Unknown ViewModel class")

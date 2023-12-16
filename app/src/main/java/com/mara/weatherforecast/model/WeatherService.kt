@@ -28,10 +28,12 @@ class WeatherService(private val apiKey: String) {
 
     // Function to fetch current weather data by city name.
     suspend fun fetchWeatherData(city: String): Pair<String, String> {
-        val url = "https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric"
+        val url =
+            "https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric"
         return makeRequest(url) { jsonString ->
             val jsonResponse = JSONObject(jsonString)
-            val weatherDescription = jsonResponse.getJSONArray("weather").getJSONObject(0).getString("description")
+            val weatherDescription =
+                jsonResponse.getJSONArray("weather").getJSONObject(0).getString("description")
             val temp = jsonResponse.getJSONObject("main").getString("temp")
             Pair(weatherDescription, temp)
         }
@@ -39,10 +41,12 @@ class WeatherService(private val apiKey: String) {
 
     // Function to fetch current weather data by latitude and longitude.
     suspend fun fetchWeatherData(latitude: Double, longitude: Double): Pair<String, String> {
-        val url = "https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric"
+        val url =
+            "https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric"
         return makeRequest(url) { jsonString ->
             val jsonResponse = JSONObject(jsonString)
-            val weatherDescription = jsonResponse.getJSONArray("weather").getJSONObject(0).getString("description")
+            val weatherDescription =
+                jsonResponse.getJSONArray("weather").getJSONObject(0).getString("description")
             val temp = jsonResponse.getJSONObject("main").getString("temp")
             Pair(weatherDescription, temp)
         }
@@ -50,7 +54,8 @@ class WeatherService(private val apiKey: String) {
 
     // Function to fetch five-day weather forecast by city name.
     suspend fun fetchFiveDayForecast(city: String): ForecastResponse {
-        val url = "https://api.openweathermap.org/data/2.5/forecast?q=$city&appid=$apiKey&units=metric"
+        val url =
+            "https://api.openweathermap.org/data/2.5/forecast?q=$city&appid=$apiKey&units=metric"
         return makeRequest(url) { jsonString ->
             gson.fromJson(jsonString, ForecastResponse::class.java)
         }
@@ -58,7 +63,8 @@ class WeatherService(private val apiKey: String) {
 
     // Function to fetch five-day weather forecast by latitude and longitude.
     suspend fun fetchFiveDayForecast(latitude: Double, longitude: Double): ForecastResponse {
-        val url = "https://api.openweathermap.org/data/2.5/forecast?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric"
+        val url =
+            "https://api.openweathermap.org/data/2.5/forecast?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric"
         return makeRequest(url) { jsonString ->
             gson.fromJson(jsonString, ForecastResponse::class.java)
         }
