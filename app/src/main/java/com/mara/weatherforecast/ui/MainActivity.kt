@@ -203,6 +203,7 @@ class MainActivity : AppCompatActivity() {
         textTemp.text = "${weatherData.second}°C"
     }
 
+
     // Function to update the five-day forecast views with data from the forecast response
     private fun updateForecastViews(forecastResponse: ForecastResponse) {
         val dateFormat = SimpleDateFormat("EEE", Locale.getDefault())
@@ -210,8 +211,15 @@ class MainActivity : AppCompatActivity() {
 
         forecastList.forEachIndexed { index, forecasts ->
             val forecast = forecasts.maxByOrNull { it.dt } ?: return@forEachIndexed
-            val date = Date(forecast.dt * 1000)
-            val formattedDate = dateFormat.format(date)
+
+            // Calculate the offset from the current day (index 2)
+            val dayOffset = index - 2
+
+            // Calculate the date based on the offset
+            val date = Calendar.getInstance()
+            date.add(Calendar.DAY_OF_MONTH, dayOffset)
+
+            val formattedDate = dateFormat.format(date.time)
             val iconCode = forecast.weather.first().icon
             val temperature = "${forecast.main.temp}°C"
 
@@ -224,7 +232,6 @@ class MainActivity : AppCompatActivity() {
                     iconCode,
                     temperature
                 )
-
                 1 -> updateForecastView(
                     dayTwoText,
                     weatherIconTwoImage,
@@ -233,7 +240,6 @@ class MainActivity : AppCompatActivity() {
                     iconCode,
                     temperature
                 )
-
                 2 -> updateForecastView(
                     dayThreeText,
                     weatherIconThreeImage,
@@ -242,7 +248,6 @@ class MainActivity : AppCompatActivity() {
                     iconCode,
                     temperature
                 )
-
                 3 -> updateForecastView(
                     dayFourText,
                     weatherIconFourImage,
@@ -251,7 +256,6 @@ class MainActivity : AppCompatActivity() {
                     iconCode,
                     temperature
                 )
-
                 4 -> updateForecastView(
                     dayFiveText,
                     weatherIconFiveImage,
@@ -263,6 +267,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+
 
     // Function to update a single forecast view
     private fun updateForecastView(
