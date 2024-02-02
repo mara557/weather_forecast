@@ -53,9 +53,11 @@
 
     <FrameLayout
         android:id="@+id/frameLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="50dp"
+        android:foregroundGravity="center"
         app:layout_constraintBottom_toTopOf="@+id/horizontalScrollView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -63,15 +65,19 @@
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="230dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:background="@null"
+            android:foregroundGravity="center"
             android:visibility="visible"
             app:srcCompat="@drawable/black_circle" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:foregroundGravity="center"
             android:gravity="center"
             android:orientation="vertical">
 
@@ -79,7 +85,7 @@
                 android:id="@+id/Town"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Leeds"
+                android:text="Town"
                 android:textColor="@color/grey"
                 android:textSize="26sp" />
 
@@ -87,7 +93,7 @@
                 android:id="@+id/currentCondition"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="clear sky"
+                android:text="Condition"
                 android:textColor="@color/grey"
                 android:textSize="22sp" />
 
@@ -95,13 +101,14 @@
                 android:id="@+id/textTemp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="12.36°C"
+                android:text="Temp"
                 android:textColor="@color/grey"
                 android:textSize="30sp" />
 
         </LinearLayout>
 
     </FrameLayout>
+
 
 
     <HorizontalScrollView

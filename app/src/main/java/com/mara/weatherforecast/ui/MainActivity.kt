@@ -5,11 +5,13 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -22,6 +24,7 @@ import com.mara.weatherforecast.model.WeatherService
 import com.mara.weatherforecast.utils.Result
 import com.mara.weatherforecast.viewmodel.WeatherViewModel
 import com.mara.weatherforecast.viewmodel.WeatherViewModelFactory
+import okio.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -178,6 +181,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         locationButton.setOnClickListener {
+            Log.d("location", "button pressed")
             checkLocationPermissionAndFetchLocation()
         }
     }
@@ -193,6 +197,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+
 
 
 
@@ -286,16 +292,19 @@ class MainActivity : AppCompatActivity() {
 
     // Function to check location permission and fetch location if granted
     private fun checkLocationPermissionAndFetchLocation() {
+        Log.d("location", "starting")
         if (ActivityCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
+            Log.d("location", "no permissions")
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 LOCATION_PERMISSION_REQUEST_CODE
             )
         } else {
+            Log.d("location", "permissions accepted")
             getLastKnownLocation()
         }
     }
@@ -306,28 +315,58 @@ class MainActivity : AppCompatActivity() {
                 this, Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
+            Log.d("location", "permission granted again")
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
                     // Fetch weather data and forecast
+                    Log.d("location", "fetching")
+                    Log.d("location", location.toString())
                     viewModel.fetchWeatherData(location.latitude, location.longitude)
                     viewModel.fetchFiveDayForecast(location.latitude, location.longitude)
 
-                    // Update town name after GPS location is obtained
-                    val cityName = getCityName(location.latitude, location.longitude)
-                    updateTownName(cityName)
+                    setCityName(location.latitude, location.longitude)
+
                 }
             }
         }
     }
 
     // Function to get the city name from latitude and longitude using Geocoder
-    private fun getCityName(latitude: Double, longitude: Double): String {
-        val geocoder = Geocoder(this, Locale.getDefault())
-        val addresses: List<Address>? = geocoder.getFromLocation(latitude, longitude, 1)
 
-        // Check if addresses is not null and not empty
-        return addresses?.takeIf { it.isNotEmpty() }?.firstOrNull()?.locality ?: ""
+    private fun setCityName(latitude: Double, longitude: Double) {
+        val geocoder = Geocoder(this, Locale.getDefault())
+
+        try {
+            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+
+            if (!addresses.isNullOrEmpty()) {
+                val address = addresses[0]
+
+                // Use locality if not null, otherwise extract from address string
+                val cityName = address.locality ?: extractCityFromAddressString(address.getAddressLine(0))
+
+                Log.d("location", address.toString())
+                runOnUiThread {
+                    updateTownName(cityName)
+                }
+
+
+            } else {
+                Log.d("location", "No address found")
+            }
+        } catch (e: IOException) {
+            Log.e("location", "Geocoder error: ${e.localizedMessage}")
+        }
     }
+
+    private fun extractCityFromAddressString(addressString: String): String {
+        // Split the addressString by commas and trim each part
+        val addressParts = addressString.split(",").map { it.trim() }
+
+        // Assuming the city name is the third part
+        return if (addressParts.size > 2) addressParts[2] else ""
+    }
+
 
 
     // Function to show a toast message on the screen
