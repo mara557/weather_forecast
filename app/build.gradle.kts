@@ -11,8 +11,8 @@ android {
         applicationId = "com.mara.weatherforecast"
         minSdk = 24
         targetSdk = 34
-        versionCode = 6
-        versionName = "1.1.3"
+        versionCode = 7
+        versionName = "1.1.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -51,6 +51,11 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+
+
 
 
 }

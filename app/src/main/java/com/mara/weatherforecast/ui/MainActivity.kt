@@ -1,23 +1,30 @@
 package com.mara.weatherforecast.ui
 
+
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.location.Address
 import android.location.Geocoder
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.widget.*
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
+import com.google.android.gms.location.SettingsClient
+import com.google.android.gms.tasks.Task
 import com.mara.weatherforecast.R
 import com.mara.weatherforecast.model.ForecastResponse
 import com.mara.weatherforecast.model.WeatherService
@@ -31,7 +38,9 @@ import java.util.*
 
 // The main screen of the weather app where weather information is displayed.
 
+
 class MainActivity : AppCompatActivity() {
+
 
     // UI elements declaration
     private lateinit var locationSearch: EditText
@@ -40,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var textTemp: TextView
     private lateinit var locationButton: Button
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
 
     // Declaration of UI elements for the five-day forecast
     private lateinit var dayOneText: TextView
@@ -53,12 +63,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var dayFiveText: TextView
     private lateinit var tempFiveText: TextView
 
+
     // Declaration of UI elements for weather icons
     private lateinit var weatherIconOneImage: ImageView
     private lateinit var weatherIconTwoImage: ImageView
     private lateinit var weatherIconThreeImage: ImageView
     private lateinit var weatherIconFourImage: ImageView
     private lateinit var weatherIconFiveImage: ImageView
+
 
     // Mapping of weather icon codes to their corresponding resource IDs
     private val weatherIconsMap = mapOf(
@@ -82,18 +94,22 @@ class MainActivity : AppCompatActivity() {
         "50n" to R.drawable.ic_50n
     )
 
+
     // ViewModel responsible for managing UI-related data
     private lateinit var viewModel: WeatherViewModel
+
 
     // Constant value for location permission request code
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
 
+
     // The entry point when the activity is created
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
 
         // Initialization of UI elements
         initializeViews()
@@ -103,6 +119,7 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
     }
 
+
     // Function to initialize UI elements
     private fun initializeViews() {
         locationSearch = findViewById(R.id.locationSearch)
@@ -111,6 +128,7 @@ class MainActivity : AppCompatActivity() {
         textTemp = findViewById(R.id.textTemp)
         locationButton = findViewById(R.id.button)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
 
         dayOneText = findViewById(R.id.dayOne)
         tempOneText = findViewById(R.id.tempOne)
@@ -123,12 +141,14 @@ class MainActivity : AppCompatActivity() {
         dayFiveText = findViewById(R.id.dayFive)
         tempFiveText = findViewById(R.id.tempFive)
 
+
         weatherIconOneImage = findViewById(R.id.weatherIconOne)
         weatherIconTwoImage = findViewById(R.id.weatherIconTwo)
         weatherIconThreeImage = findViewById(R.id.weatherIconThree)
         weatherIconFourImage = findViewById(R.id.weatherIconFour)
         weatherIconFiveImage = findViewById(R.id.weatherIconFive)
     }
+
 
     // Function to set up the ViewModel for data management
     private fun setupViewModel() {
@@ -140,9 +160,11 @@ class MainActivity : AppCompatActivity() {
         // Creating the ViewModel instance
         viewModel = ViewModelProvider(this, factory)[WeatherViewModel::class.java]
 
+
         // Observing changes in ViewModel data
         observeViewModel()
     }
+
 
     // Function to observe changes in ViewModel data
     private fun observeViewModel() {
@@ -157,6 +179,8 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+
+
         viewModel.forecastData.observe(this) { result ->
             when (result) {
                 is Result.Success -> updateForecastViews(result.data)
@@ -167,6 +191,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
 
     // Function to set up listeners for UI elements
     private fun setupListeners() {
@@ -180,11 +205,13 @@ class MainActivity : AppCompatActivity() {
             } else false
         }
 
+
         locationButton.setOnClickListener {
             Log.d("location", "button pressed")
             checkLocationPermissionAndFetchLocation()
         }
     }
+
 
     // Function to update the town name based on user input or current location
     private fun updateTownName(city: String) {
@@ -197,9 +224,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
-
-
 
 
     // Function to update the UI with current weather data
@@ -215,19 +239,24 @@ class MainActivity : AppCompatActivity() {
         val dateFormat = SimpleDateFormat("EEE", Locale.getDefault())
         val forecastList = forecastResponse.list.chunked(8).take(5)
 
+
         forecastList.forEachIndexed { index, forecasts ->
             val forecast = forecasts.maxByOrNull { it.dt } ?: return@forEachIndexed
 
+
             // Calculate the offset from the current day (index 2)
             val dayOffset = index - 2
+
 
             // Calculate the date based on the offset
             val date = Calendar.getInstance()
             date.add(Calendar.DAY_OF_MONTH, dayOffset)
 
+
             val formattedDate = dateFormat.format(date.time)
             val iconCode = forecast.weather.first().icon
             val temperature = "${forecast.main.temp}°C"
+
 
             when (index) {
                 0 -> updateForecastView(
@@ -238,6 +267,7 @@ class MainActivity : AppCompatActivity() {
                     iconCode,
                     temperature
                 )
+
                 1 -> updateForecastView(
                     dayTwoText,
                     weatherIconTwoImage,
@@ -246,6 +276,7 @@ class MainActivity : AppCompatActivity() {
                     iconCode,
                     temperature
                 )
+
                 2 -> updateForecastView(
                     dayThreeText,
                     weatherIconThreeImage,
@@ -254,6 +285,7 @@ class MainActivity : AppCompatActivity() {
                     iconCode,
                     temperature
                 )
+
                 3 -> updateForecastView(
                     dayFourText,
                     weatherIconFourImage,
@@ -262,6 +294,7 @@ class MainActivity : AppCompatActivity() {
                     iconCode,
                     temperature
                 )
+
                 4 -> updateForecastView(
                     dayFiveText,
                     weatherIconFiveImage,
@@ -273,7 +306,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
 
     // Function to update a single forecast view
@@ -290,6 +322,7 @@ class MainActivity : AppCompatActivity() {
         tempText.text = temperature
     }
 
+
     // Function to check location permission and fetch location if granted
     private fun checkLocationPermissionAndFetchLocation() {
         Log.d("location", "starting")
@@ -305,9 +338,60 @@ class MainActivity : AppCompatActivity() {
             )
         } else {
             Log.d("location", "permissions accepted")
-            getLastKnownLocation()
+            checkLocationSettingsAndFetchLocation()
         }
     }
+
+    // Function to check location settings and fetch location if enabled
+    private fun checkLocationSettingsAndFetchLocation() {
+        val locationRequest = LocationRequest.create()
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+
+        val client: SettingsClient = LocationServices.getSettingsClient(this)
+        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+
+        task.addOnSuccessListener {
+            // All location settings are satisfied. The client can initialize location
+            // requests here.
+            Log.d("location", "Location settings satisfied. Fetching location.")
+            getLastKnownLocation()
+        }
+
+        task.addOnFailureListener { e ->
+            // Location settings are not satisfied, but this can be fixed by showing the user
+            // a dialog.
+            Log.e("location", "Location settings not satisfied. Exception: $e")
+            if (e is ResolvableApiException) {
+                try {
+                    // Show the dialog by calling startResolutionForResult(),
+                    // and check the result in onActivityResult().
+                    val REQUEST_ENABLE_LOCATION = 123
+                    e.startResolutionForResult(this, REQUEST_ENABLE_LOCATION)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    // Ignore the error.
+                    Log.e("location", "Error starting resolution for location settings: $sendEx")
+                }
+            }
+        }
+    }
+
+    // Handling the result of the location settings resolution
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val REQUEST_ENABLE_LOCATION = 123
+
+        if (requestCode == REQUEST_ENABLE_LOCATION) {
+            if (resultCode == Activity.RESULT_OK) {
+                // The user enabled location services, fetch location
+                Log.d("location", "Location services enabled. Fetching location.")
+                getLastKnownLocation()
+            } else {
+                showToast("Location services are required for this feature.")
+            }
+        }
+    }
+
 
     // Function to fetch the last known location if location permission is granted
     private fun getLastKnownLocation() {
@@ -324,26 +408,35 @@ class MainActivity : AppCompatActivity() {
                     viewModel.fetchWeatherData(location.latitude, location.longitude)
                     viewModel.fetchFiveDayForecast(location.latitude, location.longitude)
 
+
                     setCityName(location.latitude, location.longitude)
+
 
                 }
             }
         }
     }
 
+
     // Function to get the city name from latitude and longitude using Geocoder
+
 
     private fun setCityName(latitude: Double, longitude: Double) {
         val geocoder = Geocoder(this, Locale.getDefault())
 
+
         try {
             val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+
 
             if (!addresses.isNullOrEmpty()) {
                 val address = addresses[0]
 
+
                 // Use locality if not null, otherwise extract from address string
-                val cityName = address.locality ?: extractCityFromAddressString(address.getAddressLine(0))
+                val cityName =
+                    address.locality ?: extractCityFromAddressString(address.getAddressLine(0))
+
 
                 Log.d("location", address.toString())
                 runOnUiThread {
@@ -359,14 +452,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     private fun extractCityFromAddressString(addressString: String): String {
         // Split the addressString by commas and trim each part
         val addressParts = addressString.split(",").map { it.trim() }
 
+
         // Assuming the city name is the third part
         return if (addressParts.size > 2) addressParts[2] else ""
     }
-
 
 
     // Function to show a toast message on the screen
@@ -387,6 +481,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
+
+
+
+
 
 
 

@@ -40,44 +40,43 @@
         android:id="@+id/textCurrent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:fontFamily="@font/noto_serif"
         android:gravity="center_horizontal|center_vertical"
         android:text="Current weather"
         android:textColor="@color/black"
         android:textSize="28sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/frameLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/locationSearch" />
 
-    <FrameLayout
-        android:id="@+id/frameLayout"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="50dp"
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_marginBottom="32dp"
+        android:background="@null"
         android:foregroundGravity="center"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/horizontalScrollView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textCurrent">
+        app:layout_constraintTop_toBottomOf="@+id/textCurrent"
+        app:srcCompat="@drawable/black_circle" />
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="@null"
-            android:foregroundGravity="center"
-            android:visibility="visible"
-            app:srcCompat="@drawable/black_circle" />
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView"
+        app:layout_constraintEnd_toEndOf="@id/imageView"
+        app:layout_constraintStart_toStartOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="@+id/imageView">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:foregroundGravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical">
 
@@ -85,7 +84,7 @@
                 android:id="@+id/Town"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Town"
+                android:text="City"
                 android:textColor="@color/grey"
                 android:textSize="26sp" />
 
@@ -101,14 +100,13 @@
                 android:id="@+id/textTemp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Temp"
+                android:text="Temp °C"
                 android:textColor="@color/grey"
                 android:textSize="30sp" />
 
         </LinearLayout>
 
     </FrameLayout>
-
 
 
     <HorizontalScrollView
